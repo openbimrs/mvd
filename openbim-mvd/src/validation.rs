@@ -257,31 +257,35 @@ impl<'a> Validator<'a> {
                 }
             }
             if let Some(rules) = &template.rules {
-                self.validate_rules(rules, &format!("{path}/Rules"));
+                let mut rule_ids = HashSet::new();
+                self.validate_rules(rules, &format!("{path}/Rules"), &mut rule_ids);
             }
         }
     }
 
-    fn validate_rules(&mut self, rules: &Rules, path: &str) {
+    fn validate_rules(&mut self, rules: &Rules, path: &str, rule_ids: &mut HashSet<String>) {
         self.require_non_empty(
             &rules.attribute_rules,
             path,
             "xsd.min_occurs",
             "Rules must contain at least one AttributeRule",
         );
-        let mut sibling_ids = HashSet::new();
         for (index, rule) in rules.attribute_rules.iter().enumerate() {
             let child_path = format!("{path}/AttributeRule[{index}]");
             self.normalized_required(
                 &rule.attribute_name,
                 &format!("{child_path}/@AttributeName"),
             );
-            self.validate_rule_id(rule.rule_id.as_deref(), &child_path, &mut sibling_ids);
+            self.validate_rule_id(rule.rule_id.as_deref(), &child_path, rule_ids);
             if let Some(description) = &rule.description {
                 self.normalized(description, &format!("{child_path}/@Description"));
             }
             if let Some(entity_rules) = &rule.entity_rules {
-                self.validate_entity_rules(entity_rules, &format!("{child_path}/EntityRules"));
+                self.validate_entity_rules(
+                    entity_rules,
+                    &format!("{child_path}/EntityRules"),
+                    rule_ids,
+                );
             }
             self.validate_constraints(
                 rule.constraints.as_ref(),
@@ -290,18 +294,22 @@ impl<'a> Validator<'a> {
         }
     }
 
-    fn validate_entity_rules(&mut self, rules: &EntityRules, path: &str) {
+    fn validate_entity_rules(
+        &mut self,
+        rules: &EntityRules,
+        path: &str,
+        rule_ids: &mut HashSet<String>,
+    ) {
         self.require_non_empty(
             &rules.entity_rules,
             path,
             "xsd.min_occurs",
             "EntityRules must contain at least one EntityRule",
         );
-        let mut sibling_ids = HashSet::new();
         for (index, rule) in rules.entity_rules.iter().enumerate() {
             let child_path = format!("{path}/EntityRule[{index}]");
             self.normalized_required(&rule.entity_name, &format!("{child_path}/@EntityName"));
-            self.validate_rule_id(rule.rule_id.as_deref(), &child_path, &mut sibling_ids);
+            self.validate_rule_id(rule.rule_id.as_deref(), &child_path, rule_ids);
             if let Some(description) = &rule.description {
                 self.normalized(description, &format!("{child_path}/@Description"));
             }
@@ -320,7 +328,11 @@ impl<'a> Validator<'a> {
                 }
             }
             if let Some(attribute_rules) = &rule.attribute_rules {
-                self.validate_rules(attribute_rules, &format!("{child_path}/AttributeRules"));
+                self.validate_rules(
+                    attribute_rules,
+                    &format!("{child_path}/AttributeRules"),
+                    rule_ids,
+                );
             }
             self.validate_constraints(
                 rule.constraints.as_ref(),

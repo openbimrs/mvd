@@ -61,7 +61,7 @@ fn rejects_wrong_child_namespace_and_schema_sequence() {
     ));
 
     let sequence = MINIMAL.replace(
-        "/>" ,
+        "/>",
         "><Views><ModelView uuid=\"00000000-0000-4000-8000-000000000002\" name=\"v\" applicableSchema=\"IFC4\"/></Views><Templates><ConceptTemplate uuid=\"00000000-0000-4000-8000-000000000003\" name=\"t\" applicableSchema=\"IFC4\"/></Templates></mvdXML>",
     );
     assert!(matches!(
@@ -78,6 +78,25 @@ fn rejects_wrong_child_namespace_and_schema_sequence() {
     let empty_definition = MINIMAL.replace("/>", "><Templates><ConceptTemplate uuid=\"00000000-0000-4000-8000-000000000005\" name=\"t\" applicableSchema=\"IFC4\"><Definitions><Definition/></Definitions></ConceptTemplate></Templates></mvdXML>");
     let document = MvdXml::from_xml(&empty_definition).unwrap();
     assert!(document.is_valid());
+
+    let unknown_root_child = MINIMAL.replace("/>", "><Surprise/></mvdXML>");
+    assert!(matches!(
+        MvdXml::from_xml(&unknown_root_child),
+        Err(CodecError::UnknownElement { .. })
+    ));
+
+    let unexpected_root_text = MINIMAL.replace("/>", ">surprise</mvdXML>");
+    assert!(matches!(
+        MvdXml::from_xml(&unexpected_root_text),
+        Err(CodecError::UnexpectedText { .. })
+    ));
+
+    let unknown_nested_child =
+        MINIMAL.replace("/>", "><Templates><Surprise/></Templates></mvdXML>");
+    assert!(matches!(
+        MvdXml::from_xml(&unknown_nested_child),
+        Err(CodecError::UnknownElement { .. })
+    ));
 }
 
 #[test]
@@ -122,6 +141,45 @@ fn accepts_both_xml_schema_boolean_lexical_forms() {
         .unwrap()
         .concepts[0];
     assert_eq!(concept.override_base, Some(true));
+}
+
+#[test]
+fn rejects_wrongly_qualified_attributes_and_nilled_content() {
+    let qualified_model_attribute = MINIMAL.replace(
+        "/>",
+        " xmlns:q=\"urn:evil\"><Templates><ConceptTemplate uuid=\"00000000-0000-4000-8000-000000000002\" name=\"t\" applicableSchema=\"IFC4\" q:isPartial=\"true\"/></Templates></mvdXML>",
+    );
+    assert!(matches!(
+        MvdXml::from_xml(&qualified_model_attribute),
+        Err(CodecError::WrongAttributeNamespace { .. })
+    ));
+
+    let wrong_schema_location = MINIMAL.replace(
+        "/>",
+        " xmlns:q=\"urn:evil\" q:schemaLocation=\"urn:a urn:b\"/>",
+    );
+    assert!(matches!(
+        MvdXml::from_xml(&wrong_schema_location),
+        Err(CodecError::WrongAttributeNamespace { .. })
+    ));
+
+    let unqualified_nil = MINIMAL.replace(
+        "/>",
+        "><Templates><ConceptTemplate uuid=\"00000000-0000-4000-8000-000000000002\" name=\"t\" applicableSchema=\"IFC4\"><Rules><AttributeRule nil=\"true\" AttributeName=\"A\"/></Rules></ConceptTemplate></Templates></mvdXML>",
+    );
+    assert!(matches!(
+        MvdXml::from_xml(&unqualified_nil),
+        Err(CodecError::WrongAttributeNamespace { .. })
+    ));
+
+    let nilled_content = MINIMAL.replace(
+        "/>",
+        " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><Templates><ConceptTemplate uuid=\"00000000-0000-4000-8000-000000000002\" name=\"t\" applicableSchema=\"IFC4\"><Rules><AttributeRule xsi:nil=\"true\" AttributeName=\"A\"><Constraints><Constraint Expression=\"A=1\"/></Constraints></AttributeRule></Rules></ConceptTemplate></Templates></mvdXML>",
+    );
+    assert!(matches!(
+        MvdXml::from_xml(&nilled_content),
+        Err(CodecError::NilledElementHasContent { .. })
+    ));
 }
 
 #[test]

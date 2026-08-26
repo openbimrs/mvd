@@ -1,19 +1,24 @@
 [package]
 name = "openbim-mvd"
-version.workspace = true
-edition.workspace = true
-rust-version.workspace = true
-license.workspace = true
-authors.workspace = true
-repository.workspace = true
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+authors = ["openbimrs contributors"]
+repository = "https://github.com/openbimrs/mvd"
+homepage = "https://openbimrs.github.io/mvd/"
+documentation = "https://docs.rs/openbim-mvd"
 readme = "README.md"
 description = "Pure-Rust buildingSMART mvdXML 1.1 typed model, codec, rules, and validation"
 keywords = ["bim", "openbim", "ifc", "mvdxml"]
 categories = ["parser-implementations", "data-structures"]
 include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
 
-[lints]
-workspace = true
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
 
 [dependencies]
 quick-xml = { version = "0.41", features = ["serialize"] }

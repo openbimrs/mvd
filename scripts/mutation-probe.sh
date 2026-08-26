@@ -37,6 +37,33 @@ fn uuid_gate() {
 }
 
 #[test]
+fn unknown_element_gate() {
+    let xml = MINIMAL.replace("/>", "><Surprise/></mvdXML>");
+    assert!(matches!(
+        MvdXml::from_xml(&xml),
+        Err(CodecError::UnknownElement { .. })
+    ));
+}
+
+#[test]
+fn attribute_namespace_gate() {
+    let xml = MINIMAL.replace(
+        "/>",
+        " xmlns:q=\"urn:q\"><Templates><ConceptTemplate uuid=\"00000000-0000-4000-8000-000000000002\" name=\"t\" applicableSchema=\"IFC4\" q:isPartial=\"true\"/></Templates></mvdXML>",
+    );
+    assert!(matches!(
+        MvdXml::from_xml(&xml),
+        Err(CodecError::WrongAttributeNamespace { .. })
+    ));
+}
+
+#[test]
+fn expression_depth_gate() {
+    let expression = format!("{}A=1{}", "(".repeat(65), ")".repeat(65));
+    assert!(ParameterExpression::parse(&expression).is_err());
+}
+
+#[test]
 fn dtd_gate() {
     let xml = MINIMAL.replace("<mvdXML", "<!DOCTYPE mvdXML><mvdXML");
     assert!(matches!(MvdXml::from_xml(&xml), Err(CodecError::DtdForbidden)));
@@ -51,6 +78,15 @@ fn keyref_gate() {
     concept.template.reference = Some(uuid::Uuid::from_u128(999));
     assert!(document.validate().iter().any(|issue| {
         issue.severity == Severity::Error && issue.code == "xsd.template_keyref"
+    }));
+}
+
+#[test]
+fn rule_id_scope_gate() {
+    const XML: &str = "<mvdXML xmlns='http://buildingsmart-tech.org/mvd/XML/1.1' uuid='00000000-0000-4000-8000-000000000001' name='r'><Templates><ConceptTemplate uuid='00000000-0000-4000-8000-000000000002' name='t' applicableSchema='IFC4'><Rules><AttributeRule AttributeName='A' RuleID='R'><EntityRules><EntityRule EntityName='E' RuleID='R'/></EntityRules></AttributeRule></Rules></ConceptTemplate></Templates></mvdXML>";
+    let document = MvdXml::from_xml(XML).unwrap();
+    assert!(document.validate().iter().any(|issue| {
+        issue.severity == Severity::Error && issue.code == "mvd.ambiguous_rule_id"
     }));
 }
 
@@ -94,7 +130,7 @@ PY
 }
 
 failures=0
-for test_name in namespace_gate uuid_gate dtd_gate keyref_gate expression_gate; do
+for test_name in namespace_gate uuid_gate unknown_element_gate attribute_namespace_gate expression_depth_gate dtd_gate keyref_gate rule_id_scope_gate expression_gate; do
   if ! run_test "$test_name"; then
     echo "mutation-probe: FAIL (clean baseline $test_name does not pass)" >&2
     tail -n 30 "$TEMP/$test_name.log" >&2
@@ -105,8 +141,12 @@ done
 if [[ "$failures" -eq 0 ]]; then
   mutate "namespace" "openbim-mvd/src/codec.rs"     "if actual != NAMESPACE {" "if false {" namespace_gate || failures=$((failures + 1))
   mutate "UUID" "openbim-mvd/src/codec.rs"     "if !canonical {" "if false {" uuid_gate || failures=$((failures + 1))
+  mutate "unknown element" "openbim-mvd/src/codec.rs"     "child_rank(&parent.name, child).ok_or_else(|| CodecError::UnknownElement {" "Some(parent.last_rank).ok_or_else(|| CodecError::UnknownElement {" unknown_element_gate || failures=$((failures + 1))
+  mutate "attribute namespace" "openbim-mvd/src/codec.rs"     "if !namespace_is_valid {" "if false {" attribute_namespace_gate || failures=$((failures + 1))
+  mutate "expression depth" "openbim-mvd/src/rules.rs"     "if self.depth >= 64 {" "if false {" expression_depth_gate || failures=$((failures + 1))
   mutate "DTD" "openbim-mvd/src/codec.rs"     "Event::DocType(_) => return Err(CodecError::DtdForbidden)," "Event::DocType(_) => {}" dtd_gate || failures=$((failures + 1))
   mutate "template keyref" "openbim-mvd/src/validation.rs"     "&& !self.templates.contains_key(&id)" "&& false" keyref_gate || failures=$((failures + 1))
+  mutate "RuleID scope" "openbim-mvd/src/validation.rs"     "if !sibling_ids.insert(id.to_owned()) {" "if false {" rule_id_scope_gate || failures=$((failures + 1))
   mutate "expression metric" "openbim-mvd/src/rules.rs"     '"Value" => Ok(Metric::Value),' '"__mutation__" => Ok(Metric::Value),' expression_gate || failures=$((failures + 1))
 fi
 
@@ -132,4 +172,4 @@ if [[ "$failures" -ne 0 ]]; then
   exit 1
 fi
 
-echo "mutation-probe: PASS (five Rust contracts and leakage checker observed failing; working source unchanged)"
+echo "mutation-probe: PASS (nine Rust contracts and leakage checker observed failing; working source unchanged)"

@@ -19,5 +19,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Excluded locally supplied standards PDFs, schemas, and official examples from source, Cargo packages, and Pages artifacts.
 - Added bounded XML preflight checks and DTD rejection before typed deserialization.
+- Rejects undeclared elements, non-schema text content, wrongly qualified model/XSI attributes, and content on `xsi:nil="true"` elements.
+- Caps parameter-expression grouping depth to prevent recursive parser exhaustion.
 
 [Unreleased]: https://github.com/openbimrs/mvd/commits/main

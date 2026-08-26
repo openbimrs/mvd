@@ -399,11 +399,16 @@ const fn logical_rank(value: LogicalValue) -> u8 {
 struct Parser<'a> {
     input: &'a str,
     offset: usize,
+    depth: usize,
 }
 
 impl<'a> Parser<'a> {
     const fn new(input: &'a str) -> Self {
-        Self { input, offset: 0 }
+        Self {
+            input,
+            offset: 0,
+            depth: 0,
+        }
     }
 
     fn expression(&mut self) -> Result<ParameterExpression, RuleParseError> {
@@ -425,7 +430,13 @@ impl<'a> Parser<'a> {
     fn term(&mut self) -> Result<BooleanTerm, RuleParseError> {
         self.skip_ws();
         if self.consume_char('(') {
-            let expression = self.expression()?;
+            if self.depth >= 64 {
+                return Err(self.error("expression nesting exceeds 64 groups"));
+            }
+            self.depth += 1;
+            let expression = self.expression();
+            self.depth -= 1;
+            let expression = expression?;
             self.skip_ws();
             if !self.consume_char(')') {
                 return Err(self.error("expected `)`"));
@@ -773,6 +784,13 @@ mod tests {
             ParameterValue::String("ordinary".into()),
         );
         assert!(expression.evaluate(&values).unwrap());
+    }
+
+    #[test]
+    fn rejects_excessive_group_nesting() {
+        let expression = format!("{}A=1{}", "(".repeat(65), ")".repeat(65));
+        let error = ParameterExpression::parse(&expression).unwrap_err();
+        assert_eq!(error.message, "expression nesting exceeds 64 groups");
     }
 
     #[test]

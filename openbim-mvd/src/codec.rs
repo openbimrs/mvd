@@ -2,10 +2,12 @@
 
 use quick_xml::NsReader;
 use quick_xml::events::Event;
-use quick_xml::name::ResolveResult;
+use quick_xml::name::{NamespaceResolver, ResolveResult};
 use thiserror::Error;
 
 use crate::model::{MvdXml, NAMESPACE};
+
+const XSI_NAMESPACE: &str = "http://www.w3.org/2001/XMLSchema-instance";
 
 /// Resource limits applied before typed deserialization.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,6 +60,18 @@ pub enum CodecError {
     ElementOrder { parent: String, child: String },
     #[error("attribute `{0}` is not declared on mvdXML")]
     UnknownRootAttribute(String),
+    #[error("element `{child}` is not allowed inside `{parent}`")]
+    UnknownElement { parent: String, child: String },
+    #[error("attribute `{attribute}` on `{element}` has invalid namespace `{actual}`")]
+    WrongAttributeNamespace {
+        element: String,
+        attribute: String,
+        actual: String,
+    },
+    #[error("nilled element `{element}` contains schema content")]
+    NilledElementHasContent { element: String },
+    #[error("element `{element}` contains non-whitespace text")]
+    UnexpectedText { element: String },
     #[error("mvdXML does not match the typed 1.1 schema: {0}")]
     Decode(#[from] quick_xml::DeError),
     #[error("could not serialize mvdXML: {0}")]
@@ -113,7 +127,7 @@ fn preflight(xml: &str, limits: ParseLimits) -> Result<(), CodecError> {
     let mut stack: Vec<ElementFrame> = Vec::new();
 
     loop {
-        let (namespace, event) = reader.read_resolved_event_into(&mut buffer)?;
+        let event = reader.read_event_into(&mut buffer)?;
         events = events.saturating_add(1);
         if events > limits.max_events {
             return Err(CodecError::EventLimit(limits.max_events));
@@ -121,10 +135,16 @@ fn preflight(xml: &str, limits: ParseLimits) -> Result<(), CodecError> {
 
         match event {
             Event::Start(element) => {
-                validate_uuid_attributes(&element)?;
                 let name = element_local_name(&element);
+                let nilled = verify_attribute_namespaces(&name, &element, reader.resolver())?;
+                let namespace = reader.resolver().resolve_element(element.name()).0;
+                validate_uuid_attributes(&element)?;
                 observe_child(&mut stack, &name)?;
-                stack.push(ElementFrame { name, last_rank: 0 });
+                stack.push(ElementFrame {
+                    name,
+                    last_rank: 0,
+                    nilled,
+                });
                 if !saw_root {
                     verify_root(&element, namespace)?;
                     saw_root = true;
@@ -140,8 +160,10 @@ fn preflight(xml: &str, limits: ParseLimits) -> Result<(), CodecError> {
                 }
             }
             Event::Empty(element) => {
-                validate_uuid_attributes(&element)?;
                 let name = element_local_name(&element);
+                verify_attribute_namespaces(&name, &element, reader.resolver())?;
+                let namespace = reader.resolver().resolve_element(element.name()).0;
+                validate_uuid_attributes(&element)?;
                 observe_child(&mut stack, &name)?;
                 if !saw_root {
                     verify_root(&element, namespace)?;
@@ -155,6 +177,7 @@ fn preflight(xml: &str, limits: ParseLimits) -> Result<(), CodecError> {
                 stack.pop();
             }
             Event::Text(text) => {
+                reject_element_text(&stack, text.as_ref())?;
                 text_bytes = text_bytes.saturating_add(text.as_ref().len());
                 if text_bytes > limits.max_text_bytes {
                     return Err(CodecError::TextLimit {
@@ -164,6 +187,7 @@ fn preflight(xml: &str, limits: ParseLimits) -> Result<(), CodecError> {
                 }
             }
             Event::CData(text) => {
+                reject_element_text(&stack, text.as_ref())?;
                 text_bytes = text_bytes.saturating_add(text.as_ref().len());
                 if text_bytes > limits.max_text_bytes {
                     return Err(CodecError::TextLimit {
@@ -218,6 +242,80 @@ fn verify_namespace(namespace: ResolveResult<'_>) -> Result<(), CodecError> {
     Ok(())
 }
 
+fn verify_attribute_namespaces(
+    element_name: &str,
+    element: &quick_xml::events::BytesStart<'_>,
+    resolver: &NamespaceResolver,
+) -> Result<bool, CodecError> {
+    let mut nilled = false;
+    for attribute in element.attributes().with_checks(false) {
+        let attribute = attribute.map_err(|error| CodecError::Attribute(error.to_string()))?;
+        let raw_name = attribute.key.as_ref();
+        if raw_name == b"xmlns" || raw_name.starts_with(b"xmlns:") {
+            continue;
+        }
+
+        let (namespace, local_name) = resolver.resolve_attribute(attribute.key);
+        let special = matches!(local_name.as_ref(), b"nil" | b"schemaLocation");
+        let namespace_is_valid = if special {
+            matches!(namespace, ResolveResult::Bound(value) if value.as_ref() == XSI_NAMESPACE.as_bytes())
+        } else {
+            matches!(namespace, ResolveResult::Unbound)
+        };
+        if !namespace_is_valid {
+            return Err(CodecError::WrongAttributeNamespace {
+                element: element_name.to_owned(),
+                attribute: String::from_utf8_lossy(raw_name).into_owned(),
+                actual: resolved_namespace_name(namespace),
+            });
+        }
+
+        if local_name.as_ref() == b"nil" {
+            if !matches!(element_name, "AttributeRule" | "Link") {
+                return Err(CodecError::WrongAttributeNamespace {
+                    element: element_name.to_owned(),
+                    attribute: String::from_utf8_lossy(raw_name).into_owned(),
+                    actual: XSI_NAMESPACE.to_owned(),
+                });
+            }
+            let value = attribute
+                .normalized_value(quick_xml::XmlVersion::Implicit1_0)
+                .map_err(|error| CodecError::Attribute(error.to_string()))?;
+            nilled = matches!(value.as_ref(), "true" | "1");
+        }
+    }
+    Ok(nilled)
+}
+
+fn resolved_namespace_name(namespace: ResolveResult<'_>) -> String {
+    match namespace {
+        ResolveResult::Bound(value) => String::from_utf8_lossy(value.as_ref()).into_owned(),
+        ResolveResult::Unbound => String::new(),
+        ResolveResult::Unknown(prefix) => {
+            format!("unresolved prefix {}", String::from_utf8_lossy(&prefix))
+        }
+    }
+}
+
+fn reject_element_text(stack: &[ElementFrame], text: &[u8]) -> Result<(), CodecError> {
+    let Some(frame) = stack.last() else {
+        return Ok(());
+    };
+    if frame.nilled && !text.is_empty() {
+        return Err(CodecError::NilledElementHasContent {
+            element: frame.name.clone(),
+        });
+    }
+    if !matches!(frame.name.as_str(), "Body" | "Requirement")
+        && text.iter().any(|byte| !byte.is_ascii_whitespace())
+    {
+        return Err(CodecError::UnexpectedText {
+            element: frame.name.clone(),
+        });
+    }
+    Ok(())
+}
+
 fn verify_root_attributes(element: &quick_xml::events::BytesStart<'_>) -> Result<(), CodecError> {
     for attribute in element.attributes().with_checks(false) {
         let attribute = attribute.map_err(|error| CodecError::Attribute(error.to_string()))?;
@@ -262,6 +360,7 @@ fn validate_uuid_attributes(element: &quick_xml::events::BytesStart<'_>) -> Resu
 struct ElementFrame {
     name: String,
     last_rank: usize,
+    nilled: bool,
 }
 
 fn element_local_name(element: &quick_xml::events::BytesStart<'_>) -> String {
@@ -272,9 +371,15 @@ fn observe_child(stack: &mut [ElementFrame], child: &str) -> Result<(), CodecErr
     let Some(parent) = stack.last_mut() else {
         return Ok(());
     };
-    let Some(rank) = child_rank(&parent.name, child) else {
-        return Ok(());
-    };
+    if parent.nilled {
+        return Err(CodecError::NilledElementHasContent {
+            element: parent.name.clone(),
+        });
+    }
+    let rank = child_rank(&parent.name, child).ok_or_else(|| CodecError::UnknownElement {
+        parent: parent.name.clone(),
+        child: child.to_owned(),
+    })?;
     if rank < parent.last_rank {
         return Err(CodecError::ElementOrder {
             parent: parent.name.clone(),
@@ -316,6 +421,8 @@ fn schema_child_order(parent: &str) -> Option<&'static [&'static str]> {
         "Concepts" => &["Concept"],
         "Concept" => &["Definitions", "Template", "Requirements", "TemplateRules"],
         "Requirements" => &["Requirement"],
+        "Body" | "Link" | "Template" | "Constraint" | "BaseView" | "Requirement"
+        | "TemplateRule" => &[],
         _ => return None,
     })
 }

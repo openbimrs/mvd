@@ -42,6 +42,13 @@ fn catches_identity_and_key_reference_defects() {
 }
 
 #[test]
+fn catches_duplicate_rule_ids_across_a_template_rule_tree() {
+    const XML: &str = "<mvdXML xmlns='http://buildingsmart-tech.org/mvd/XML/1.1' uuid='00000000-0000-4000-8000-000000000001' name='r'><Templates><ConceptTemplate uuid='00000000-0000-4000-8000-000000000002' name='t' applicableSchema='IFC4'><Rules><AttributeRule AttributeName='A' RuleID='R'><EntityRules><EntityRule EntityName='E' RuleID='R'/></EntityRules></AttributeRule></Rules></ConceptTemplate></Templates></mvdXML>";
+    let document = MvdXml::from_xml(XML).unwrap();
+    assert!(has(&document, "mvd.ambiguous_rule_id"));
+}
+
+#[test]
 fn catches_cycles_unknown_parameters_and_invalid_cardinality() {
     let mut base_cycle = source();
     let views = base_cycle.views.as_mut().unwrap();
