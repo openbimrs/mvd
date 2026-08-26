@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mvdXML xmlns="http://buildingsmart-tech.org/mvd/XML/1.1"
+        uuid="00000000-0000-4000-8000-000000000001"
+        name="OpenBIM.rs authored conformance fixture" status="draft">
+  <Templates>
+    <ConceptTemplate uuid="00000000-0000-4000-8000-000000000002"
+                     name="Wall name" applicableSchema="IFC4" applicableEntity="IfcWall">
+      <Definitions>
+        <Definition>
+          <Body lang="en" tags="conformance authored">A wall with a controlled name.</Body>
+          <Link href="https://example.invalid/mvd/wall" lang="en" title="Example" category="example"/>
+        </Definition>
+      </Definitions>
+      <Rules>
+        <AttributeRule RuleID="_Name" AttributeName="Name">
+          <Constraints>
+            <Constraint Expression="[Value]='Wall'"/>
+          </Constraints>
+        </AttributeRule>
+      </Rules>
+      <SubTemplates>
+        <ConceptTemplate uuid="00000000-0000-4000-8000-000000000003"
+                         name="Nested description" applicableSchema="IFC4">
+          <Rules>
+            <AttributeRule RuleID="_Description" AttributeName="Description"/>
+          </Rules>
+        </ConceptTemplate>
+      </SubTemplates>
+    </ConceptTemplate>
+  </Templates>
+  <Views>
+    <ModelView uuid="00000000-0000-4000-8000-000000000004"
+               name="Coordination view" applicableSchema="IFC4">
+      <Definitions>
+        <Definition><Body lang="en">Authored model view.</Body></Definition>
+      </Definitions>
+      <BaseView href="https://example.invalid/mvd/base"/>
+      <ExchangeRequirements>
+        <ExchangeRequirement uuid="00000000-0000-4000-8000-000000000005"
+                             name="Coordination export" applicability="export">
+          <Definitions>
+            <Definition><Body lang="en">Required on export.</Body></Definition>
+          </Definitions>
+        </ExchangeRequirement>
+      </ExchangeRequirements>
+      <Roots>
+        <ConceptRoot uuid="00000000-0000-4000-8000-000000000006"
+                     name="Walls" applicableRootEntity="IfcWall">
+          <Applicability>
+            <Template ref="00000000-0000-4000-8000-000000000002"/>
+            <TemplateRules operator="and">
+              <TemplateRule Parameters="_Name[Exists]=TRUE"/>
+            </TemplateRules>
+          </Applicability>
+          <Concepts>
+            <Concept uuid="00000000-0000-4000-8000-000000000007"
+                     name="Named wall">
+              <Template ref="00000000-0000-4000-8000-000000000002"/>
+              <Requirements>
+                <Requirement exchangeRequirement="00000000-0000-4000-8000-000000000005"
+                             requirement="mandatory" applicability="export">Exported walls require a name.</Requirement>
+              </Requirements>
+              <TemplateRules operator="or">
+                <TemplateRule Parameters="_Name[Value]='Wall'"/>
+                <TemplateRules operator="not">
+                  <TemplateRule Parameters="_Name[Exists]=FALSE"/>
+                </TemplateRules>
+              </TemplateRules>
+            </Concept>
+          </Concepts>
+        </ConceptRoot>
+      </Roots>
+    </ModelView>
+  </Views>
+</mvdXML>

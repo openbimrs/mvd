@@ -1,0 +1,12 @@
+references/
+tests/fixtures/mvdXML_V1-1-Final-Documentation.xml
+target/
+openbim-mvd/target/
+docs/node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+node_modules/
+*.profraw
+__pycache__/
+*.py[cod]
+.hermes/

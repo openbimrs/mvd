@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">openbim-mvd</title>
+  <rect width="128" height="128" rx="28" fill="#1d478c"/>
+  <path d="M25 31h18l21 45 21-45h18L73 98H55z" fill="#fff"/>
+  <circle cx="101" cy="99" r="10" fill="#45b8b2"/>
+</svg>

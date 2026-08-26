@@ -1,0 +1,31 @@
+:root {
+  --vp-c-brand-1: #2456a6;
+  --vp-c-brand-2: #1d478c;
+  --vp-c-brand-3: #173972;
+  --vp-c-brand-soft: rgba(36, 86, 166, 0.14);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #173972 10%, #3974c7 55%, #35a4a0);
+  --vp-home-hero-image-background-image: radial-gradient(circle, rgba(57, 116, 199, 0.35), transparent 68%);
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+.VPHomeHero .image-src {
+  max-width: 300px;
+  max-height: 300px;
+}
+
+.VPFeature {
+  border-color: var(--vp-c-divider);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.VPFeature:hover {
+  border-color: var(--vp-c-brand-1);
+  transform: translateY(-2px);
+}
+
+.boundary-note {
+  border-left: 4px solid var(--vp-c-brand-1);
+  padding-left: 1rem;
+  color: var(--vp-c-text-2);
+}
