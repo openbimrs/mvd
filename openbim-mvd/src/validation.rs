@@ -495,14 +495,14 @@ impl<'a> Validator<'a> {
                 "override=true requires baseConcept",
             );
         }
-        if let Some(base) = concept.base_concept
-            && !self.concepts.contains_key(&base)
-        {
-            self.error(
-                "xsd.concept_keyref",
-                &format!("{path}/@baseConcept"),
-                format!("baseConcept {base} does not identify a Concept"),
-            );
+        if let Some(base) = concept.base_concept {
+            if !self.concepts.contains_key(&base) {
+                self.error(
+                    "xsd.concept_keyref",
+                    &format!("{path}/@baseConcept"),
+                    format!("baseConcept {base} does not identify a Concept"),
+                );
+            }
         }
         if let Some(requirements) = &concept.requirements {
             self.require_non_empty(
@@ -641,15 +641,16 @@ impl<'a> Validator<'a> {
                 "a reference must provide ref, href, or both",
             );
         }
-        if kind == ReferenceKind::Template
-            && let Some(id) = reference.reference
-            && !self.templates.contains_key(&id)
-        {
-            self.error(
-                "xsd.template_keyref",
-                &format!("{path}/@ref"),
-                format!("{id} does not identify a ConceptTemplate"),
-            );
+        if kind == ReferenceKind::Template {
+            if let Some(id) = reference.reference {
+                if !self.templates.contains_key(&id) {
+                    self.error(
+                        "xsd.template_keyref",
+                        &format!("{path}/@ref"),
+                        format!("{id} does not identify a ConceptTemplate"),
+                    );
+                }
+            }
         }
     }
 
@@ -854,10 +855,10 @@ fn collect_rule_references(rules: &Rules, output: &mut Vec<Uuid>) {
     for attribute in &rules.attribute_rules {
         if let Some(entity_rules) = &attribute.entity_rules {
             for entity in &entity_rules.entity_rules {
-                if let Some(reference) = &entity.references
-                    && let Some(id) = reference.template.reference
-                {
-                    output.push(id);
+                if let Some(reference) = &entity.references {
+                    if let Some(id) = reference.template.reference {
+                        output.push(id);
+                    }
                 }
                 if let Some(children) = &entity.attribute_rules {
                     collect_rule_references(children, output);

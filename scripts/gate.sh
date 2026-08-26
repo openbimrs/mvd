@@ -10,6 +10,7 @@ trap 'rm -rf "$TEMP"' EXIT
 step() { printf '\n==> %s\n' "$*"; "$@"; }
 
 step cargo fmt --all -- --check
+step cargo +1.85.0 check --workspace --all-targets
 step cargo check --workspace --all-targets
 step cargo build --workspace --all-targets
 step cargo test --workspace --all-targets

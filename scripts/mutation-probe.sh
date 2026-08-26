@@ -145,7 +145,7 @@ if [[ "$failures" -eq 0 ]]; then
   mutate "attribute namespace" "openbim-mvd/src/codec.rs"     "if !namespace_is_valid {" "if false {" attribute_namespace_gate || failures=$((failures + 1))
   mutate "expression depth" "openbim-mvd/src/rules.rs"     "if self.depth >= 64 {" "if false {" expression_depth_gate || failures=$((failures + 1))
   mutate "DTD" "openbim-mvd/src/codec.rs"     "Event::DocType(_) => return Err(CodecError::DtdForbidden)," "Event::DocType(_) => {}" dtd_gate || failures=$((failures + 1))
-  mutate "template keyref" "openbim-mvd/src/validation.rs"     "&& !self.templates.contains_key(&id)" "&& false" keyref_gate || failures=$((failures + 1))
+  mutate "template keyref" "openbim-mvd/src/validation.rs"     "if !self.templates.contains_key(&id) {" "if false {" keyref_gate || failures=$((failures + 1))
   mutate "RuleID scope" "openbim-mvd/src/validation.rs"     "if !sibling_ids.insert(id.to_owned()) {" "if false {" rule_id_scope_gate || failures=$((failures + 1))
   mutate "expression metric" "openbim-mvd/src/rules.rs"     '"Value" => Ok(Metric::Value),' '"__mutation__" => Ok(Metric::Value),' expression_gate || failures=$((failures + 1))
 fi

@@ -294,10 +294,10 @@ impl BooleanTerm {
                 if let Some(parameter) = &comparison.left.parameter {
                     output.push(parameter);
                 }
-                if let Benchmark::Parameter(operand) = &comparison.right
-                    && let Some(parameter) = &operand.parameter
-                {
-                    output.push(parameter);
+                if let Benchmark::Parameter(operand) = &comparison.right {
+                    if let Some(parameter) = &operand.parameter {
+                        output.push(parameter);
+                    }
                 }
             }
             Self::Group(expression) => expression.collect_parameters(output),

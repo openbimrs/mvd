@@ -22,4 +22,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Rejects undeclared elements, non-schema text content, wrongly qualified model/XSI attributes, and content on `xsi:nil="true"` elements.
 - Caps parameter-expression grouping depth to prevent recursive parser exhaustion.
 
+### Fixed
+
+- Kept the crate compatible with its declared Rust 1.85 MSRV by avoiding newer let-chain syntax.
+
 [Unreleased]: https://github.com/openbimrs/mvd/commits/main
