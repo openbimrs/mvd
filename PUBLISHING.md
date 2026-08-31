@@ -4,7 +4,7 @@
 
 ## Standards-material boundary
 
-The implementation is MIT-licensed. Redistribution rights for locally obtained mvdXML schemas, PDFs, and official example documents are not assumed. They are not runtime or build dependencies and must not appear in the repository, crate archive, or documentation site.
+The implementation is licensed under AGPL-3.0-or-later. Redistribution rights for locally obtained mvdXML schemas, PDFs, and official example documents are not assumed. They are not runtime or build dependencies and must not appear in the repository, crate archive, or documentation site.
 
 - `references/` is ignored and reserved for local material.
 - `tests/fixtures/mvdXML_V1-1-Final-Documentation.xml` is ignored and used only by an optional local test.

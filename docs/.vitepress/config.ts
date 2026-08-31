@@ -52,7 +52,7 @@ export default defineConfig({
     },
     search: { provider: 'local' },
     footer: {
-      message: 'Implementation licensed under MIT. Official standards material is not redistributed.',
+      message: 'Implementation licensed under AGPL-3.0-or-later. Official standards material is not redistributed.',
       copyright: 'Copyright © 2026 openbimrs contributors',
     },
   },

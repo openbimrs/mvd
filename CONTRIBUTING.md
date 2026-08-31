@@ -33,3 +33,10 @@ The gate checks formatting, compilation, tests, Clippy, rustdoc, mutation sensit
 ## Pull requests
 
 Keep changes focused. Explain standards assumptions, call out capability-boundary changes, add an `[Unreleased]` changelog entry for user-visible behavior, and report the exact checks run. Never attach restricted standards files to an issue or pull request.
+
+## Licensing contributions
+
+Unless an explicitly signed agreement says otherwise, every contribution
+submitted to this repository is licensed under `AGPL-3.0-or-later`. Submit only
+work that you have the right to license. Identify third-party material and
+preserve its license, attribution, and provenance.

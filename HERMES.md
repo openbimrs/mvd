@@ -11,7 +11,7 @@ Run `./scripts/gate.sh`. It is the authoritative local and CI gate and decides s
 
 ## Conventions
 
-- Rust 2024, MSRV 1.85, MIT.
+- Rust 2024, MSRV 1.85, AGPL-3.0-or-later.
 - Pure Rust and `#![forbid(unsafe_code)]`.
 - mvdXML 1.1 fixed-format validation must be distinguished from generic XSD-engine support.
 - MVD does not belong in IFC. Keep IFC adapters above both families.

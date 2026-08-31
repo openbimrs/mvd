@@ -3,7 +3,7 @@ name = "openbim-mvd"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
-license = "MIT"
+license = "AGPL-3.0-or-later"
 authors = ["openbimrs contributors"]
 repository = "https://github.com/openbimrs/mvd"
 homepage = "https://openbimrs.github.io/mvd/"
@@ -12,7 +12,7 @@ readme = "README.md"
 description = "Pure-Rust buildingSMART mvdXML 1.1 typed model, codec, rules, and validation"
 keywords = ["bim", "openbim", "ifc", "mvdxml"]
 categories = ["parser-implementations", "data-structures"]
-include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE"]
+include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE", "LICENSES/MIT.txt"]
 
 [lints.rust]
 unsafe_code = "forbid"

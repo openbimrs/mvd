@@ -3,7 +3,7 @@
 [![CI](https://github.com/openbimrs/mvd/actions/workflows/ci.yml/badge.svg)](https://github.com/openbimrs/mvd/actions/workflows/ci.yml)
 [![Docs](https://github.com/openbimrs/mvd/actions/workflows/pages.yml/badge.svg)](https://openbimrs.github.io/mvd/)
 [![MSRV 1.85](https://img.shields.io/badge/MSRV-1.85-blue)](rust-toolchain.toml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](LICENSE)
 
 Pure-Rust, typed tooling for buildingSMART mvdXML 1.1 documents: bounded XML parsing, deterministic writing, parameter-rule evaluation, and document validation.
 
