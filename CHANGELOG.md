@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-27
+
 ### Changed
 
 - Relicensed repository-authored work from MIT to `AGPL-3.0-or-later`; historical releases remain under their published MIT terms, and third-party material retains its own terms.
@@ -30,4 +32,5 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Kept the crate compatible with its declared Rust 1.85 MSRV by avoiding newer let-chain syntax.
 
-[Unreleased]: https://github.com/openbimrs/mvd/commits/main
+[Unreleased]: https://github.com/openbimrs/mvd/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/openbimrs/mvd/releases/tag/v0.1.0

@@ -34,4 +34,4 @@ features:
 
 `openbim-mvd` is a Rust library for mvdXML 1.1 documents. It can parse, write, validate, and evaluate rule trees when the caller supplies values. It does **not** open IFC models, traverse entity graphs, extract template parameters, or decide whether an IFC model satisfies an MVD.
 
-The project is pre-release at `0.1.0`. Begin with [getting started](/guide/getting-started), then use the [capability matrix](/capabilities) to check each boundary before integrating it.
+The project is at an early `0.1.0` release. Begin with [getting started](/guide/getting-started), then use the [capability matrix](/capabilities) to check each boundary before integrating it.

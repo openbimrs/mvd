@@ -9,7 +9,7 @@ Pure-Rust, typed tooling for buildingSMART mvdXML 1.1 documents: bounded XML par
 
 **Documentation:** [start here](https://openbimrs.github.io/mvd/) · [capabilities](https://openbimrs.github.io/mvd/capabilities) · [guide](https://openbimrs.github.io/mvd/guide/getting-started) · [architecture](https://openbimrs.github.io/mvd/architecture) · [security](https://openbimrs.github.io/mvd/security) · [standards boundary](https://openbimrs.github.io/mvd/standards-boundary) · [changelog](CHANGELOG.md)
 
-> **Pre-release:** the crate is version `0.1.0`. There is no automated release workflow or compatibility guarantee yet.
+> **Early release:** `openbim-mvd` 0.1.0 is published on [crates.io](https://crates.io/crates/openbim-mvd). As a 0.x crate it makes no API compatibility guarantee between minor versions.
 
 ## Capability matrix
 
@@ -30,11 +30,11 @@ Pure-Rust, typed tooling for buildingSMART mvdXML 1.1 documents: bounded XML par
 
 ## Rust
 
-The crate currently targets Rust 1.85 and edition 2024. In a checkout:
+The crate currently targets Rust 1.85 and edition 2024:
 
 ```toml
 [dependencies]
-openbim-mvd = { path = "openbim-mvd" }
+openbim-mvd = "0.1"
 ```
 
 ```rust

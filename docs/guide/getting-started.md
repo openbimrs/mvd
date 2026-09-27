@@ -6,11 +6,11 @@
 - Cargo
 - No native XML library, schema download, or network service
 
-The crate is pre-release. In this repository, use a workspace path dependency:
+Add the crate from crates.io:
 
 ```toml
 [dependencies]
-openbim-mvd = { path = "openbim-mvd" }
+openbim-mvd = "0.1"
 ```
 
 ## Parse, validate, and write
