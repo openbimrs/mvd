@@ -1,6 +1,6 @@
 # Publishing and provenance
 
-`openbim-mvd` is pre-release software. The Cargo manifest permits packaging, but this repository has no automated release workflow. Do not publish merely because `cargo publish` is technically available.
+`openbim-mvd` is published on crates.io from `.github/workflows/release.yml` through crates.io trusted publishing (OIDC). No crates.io token is stored in the repository. As a 0.x crate it makes no API compatibility guarantee between minor versions.
 
 ## Standards-material boundary
 
@@ -13,7 +13,7 @@ The implementation is licensed under AGPL-3.0-or-later. Redistribution rights fo
 
 ## Release checklist
 
-1. Confirm the intended version and update `CHANGELOG.md`.
+1. Choose the version, bump `version` in `openbim-mvd/Cargo.toml` and the root `[workspace.package]`, run `cargo update -p openbim-mvd`, and date the `## [Unreleased]` changelog section as `## [x.y.z] - YYYY-MM-DD` with its compare link.
 2. Run the complete gate with Rust 1.85:
 
    ```bash
@@ -21,16 +21,31 @@ The implementation is licensed under AGPL-3.0-or-later. Redistribution rights fo
    ./scripts/gate.sh
    ```
 
-3. Inspect the package contents and leakage result:
+   The gate packages the crate and runs `scripts/check-leakage.py` on the resulting `.crate`. To inspect the contents by hand:
 
    ```bash
    cargo package -p openbim-mvd --allow-dirty --list
-   python3 scripts/check-leakage.py      "$CARGO_TARGET_DIR/package/openbim-mvd-0.1.0.crate"
+   python3 scripts/check-leakage.py "$CARGO_TARGET_DIR/package/openbim-mvd-<version>.crate"
+   cargo publish -p openbim-mvd --dry-run
    ```
 
-4. Verify a clean install and API documentation against the MSRV.
-5. Confirm repository ownership, crate metadata, tag, and crates.io ownership with two maintainers.
-6. Publish manually only from a clean, reviewed commit; create and verify the signed/tagged GitHub release separately.
-7. Confirm the package on crates.io and API documentation on docs.rs before updating release links.
+3. Merge the release commit to `main` through a reviewed pull request.
+4. Push an annotated tag `vx.y.z` on that commit of `main`.
+5. Approve the `crates.io` environment deployment when the workflow asks for it.
+6. Confirm the package on crates.io, the API documentation on docs.rs, and the GitHub release.
 
-A future trusted-publishing workflow requires a separate security review and protected GitHub environment. It is not part of the current repository.
+## Release workflow
+
+`.github/workflows/release.yml` runs on tags matching `v[0-9]*`:
+
+- **gate** refuses a tag that is not on `main`, does not match the `openbim-mvd` version, or has no `CHANGELOG.md` section, then runs `./scripts/gate.sh` on the tagged commit (including the `.crate` leakage scan).
+- **publish** runs in the protected `crates.io` GitHub environment (required reviewer; deployments only from `main` and version tags) with `id-token: write`. It skips publishing when the version is already live on crates.io, otherwise obtains a short-lived token through `rust-lang/crates-io-auth-action` and runs `cargo publish --locked`.
+- **github-release** creates the GitHub release `vx.y.z` from the changelog section.
+
+Re-running a partly failed release skips what is already live. Running the workflow by hand (Actions -> Release -> Run workflow) with an existing tag rehearses a release: the tagged commit is gated and packaged, nothing is published.
+
+crates.io trusts this repository (`openbimrs/mvd`), the workflow file name `release.yml`, and the environment `crates.io` (crate Settings -> Trusted Publishing). Renaming either requires the same change on crates.io.
+
+### First version of a new crate
+
+Trusted publishing cannot create a crate. The first version (`0.1.0`) is therefore published by hand by a crate owner with a personal token from a clean checkout of the reviewed `main` commit, after the gate and leakage checks above. The owner then adds the trusted publisher on crates.io (repository `openbimrs/mvd`, workflow `release.yml`, environment `crates.io`) and pushes the tag `v0.1.0`; the workflow sees the version is already live and only creates the GitHub release. Every later version is published by the workflow.

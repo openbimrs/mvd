@@ -27,7 +27,9 @@ if command -v git >/dev/null 2>&1 && ! git rev-parse --verify HEAD >/dev/null 2>
   cp -a openbim-mvd "$PACKAGE_ROOT/"
 fi
 step cargo package --manifest-path "$PACKAGE_ROOT/openbim-mvd/Cargo.toml" --allow-dirty
-PACKAGE_ARCHIVE="$CARGO_TARGET_DIR/package/openbim-mvd-0.1.0.crate"
+PACKAGE_VERSION="$(cargo metadata --format-version 1 --no-deps \
+  | python3 -c 'import json,sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"]=="openbim-mvd"))')"
+PACKAGE_ARCHIVE="$CARGO_TARGET_DIR/package/openbim-mvd-$PACKAGE_VERSION.crate"
 step python3 scripts/check-leakage.py "$PACKAGE_ARCHIVE"
 
 if command -v npm >/dev/null 2>&1; then

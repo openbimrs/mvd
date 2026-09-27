@@ -34,6 +34,10 @@ The gate checks formatting, compilation, tests, Clippy, rustdoc, mutation sensit
 
 Keep changes focused. Explain standards assumptions, call out capability-boundary changes, add an `[Unreleased]` changelog entry for user-visible behavior, and report the exact checks run. Never attach restricted standards files to an issue or pull request.
 
+## Releasing
+
+Releases publish from CI through crates.io trusted publishing (`.github/workflows/release.yml`); no one needs a crates.io token. Bump the version, date the changelog section, run the gate, merge to `main`, then push an annotated tag `vx.y.z` on that commit. See [PUBLISHING.md](PUBLISHING.md) for the full checklist, the standards-material boundary, and how the first version of a new crate is published.
+
 ## Licensing contributions
 
 Unless an explicitly signed agreement says otherwise, every contribution
