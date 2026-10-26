@@ -60,9 +60,9 @@ jobs:
         with:
           # No dependency cache in a release build.
           node-version: '22'
-      - name: Install Rust 1.85
+      - name: Install Rust 1.99.1
         # The same pin as rust-toolchain.toml, so the release gate is the CI gate.
-        uses: dtolnay/rust-toolchain@bc540ba06a4ccee415bb241490e0b25ee8e7d315 # 1.85.0
+        uses: dtolnay/rust-toolchain@d124f86f28ff42855784ff3319f48ac182c248f8 # 1.99.1
         with:
           components: rustfmt, clippy
       - name: Require the tag to name the crate's version
@@ -99,8 +99,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.TAG }}
-      - name: Install Rust 1.85
-        uses: dtolnay/rust-toolchain@bc540ba06a4ccee415bb241490e0b25ee8e7d315 # 1.85.0
+      - name: Install Rust 1.99.1
+        uses: dtolnay/rust-toolchain@d124f86f28ff42855784ff3319f48ac182c248f8 # 1.99.1
       - name: Check whether this version is already live
         # Re-running a partly failed release finishes it instead of failing
         # on what already succeeded. The first version of a new crate is

@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Rust 1.85 or newer
+- Rust 1.99 or newer
 - Cargo
 - No native XML library, schema download, or network service
 

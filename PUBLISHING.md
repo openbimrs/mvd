@@ -14,7 +14,7 @@ The implementation is licensed under AGPL-3.0-or-later. Redistribution rights fo
 ## Release checklist
 
 1. Choose the version, bump `version` in `openbim-mvd/Cargo.toml` and the root `[workspace.package]`, run `cargo update -p openbim-mvd`, and date the `## [Unreleased]` changelog section as `## [x.y.z] - YYYY-MM-DD` with its compare link.
-2. Run the complete gate with Rust 1.85:
+2. Run the complete gate with Rust 1.99.1:
 
    ```bash
    export CARGO_TARGET_DIR=/tmp/openbim-mvd-target

@@ -4,7 +4,7 @@ Thank you for improving `openbimrs/mvd`.
 
 ## Setup
 
-Install Rust 1.85.0 with `rustfmt` and Clippy, Node 22+, npm, and Python 3.12+ (used by repository checks). Keep build output outside the checkout when practical:
+Install Rust 1.99.1 with `rustfmt` and Clippy, Node 22+, npm, and Python 3.12+ (used by repository checks). Keep build output outside the checkout when practical:
 
 ```bash
 export CARGO_TARGET_DIR=/tmp/openbim-mvd-target
