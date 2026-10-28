@@ -23,7 +23,7 @@ PACKAGE_ROOT="$ROOT"
 if command -v git >/dev/null 2>&1 && ! git rev-parse --verify HEAD >/dev/null 2>&1; then
   PACKAGE_ROOT="$TEMP/source-export"
   mkdir -p "$PACKAGE_ROOT"
-  cp Cargo.toml Cargo.lock LICENSE README.md "$PACKAGE_ROOT/"
+  cp -a Cargo.toml Cargo.lock LICENSE NOTICE LICENSES README.md "$PACKAGE_ROOT/"
   cp -a openbim-mvd "$PACKAGE_ROOT/"
 fi
 step cargo package --manifest-path "$PACKAGE_ROOT/openbim-mvd/Cargo.toml" --allow-dirty
@@ -31,6 +31,7 @@ PACKAGE_VERSION="$(cargo metadata --format-version 1 --no-deps \
   | python3 -c 'import json,sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"]=="openbim-mvd"))')"
 PACKAGE_ARCHIVE="$CARGO_TARGET_DIR/package/openbim-mvd-$PACKAGE_VERSION.crate"
 step python3 scripts/check-leakage.py "$PACKAGE_ARCHIVE"
+step python3 scripts/check-package-licences.py "$PACKAGE_ARCHIVE"
 
 if command -v npm >/dev/null 2>&1; then
   step npm ci

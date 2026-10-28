@@ -4,8 +4,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-28
+
 ### Changed
 
+- Licence: `AGPL-3.0-or-later OR LicenseRef-Commercial` (was
+  `AGPL-3.0-or-later`); a commercial licence is available from the copyright
+  holder named in `NOTICE`. See LICENSING.md. The crate ships `LICENSE`,
+  `NOTICE` and `LICENSES/LicenseRef-Commercial.txt`.
 - Raise MSRV to Rust 1.99.
 
 ## [0.1.0] - 2026-09-27
@@ -36,5 +42,6 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Kept the crate compatible with its declared Rust 1.85 MSRV by avoiding newer let-chain syntax.
 
-[Unreleased]: https://github.com/openbimrs/mvd/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/openbimrs/mvd/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/openbimrs/mvd/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/openbimrs/mvd/releases/tag/v0.1.0
