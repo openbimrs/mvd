@@ -3,13 +3,13 @@
 [![CI](https://github.com/openbimrs/mvd/actions/workflows/ci.yml/badge.svg)](https://github.com/openbimrs/mvd/actions/workflows/ci.yml)
 [![Docs](https://github.com/openbimrs/mvd/actions/workflows/pages.yml/badge.svg)](https://openbimrs.github.io/mvd/)
 [![MSRV 1.99](https://img.shields.io/badge/MSRV-1.99-blue)](rust-toolchain.toml)
-[![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](LICENSE)
+[![License: AGPL-3.0-or-later OR LicenseRef-Commercial](https://img.shields.io/badge/License-AGPL--3.0--or--later%20OR%20Commercial-blue.svg)](LICENSING.md)
 
 Pure-Rust, typed tooling for buildingSMART mvdXML 1.1 documents: bounded XML parsing, deterministic writing, parameter-rule evaluation, and document validation.
 
 **Documentation:** [start here](https://openbimrs.github.io/mvd/) · [capabilities](https://openbimrs.github.io/mvd/capabilities) · [guide](https://openbimrs.github.io/mvd/guide/getting-started) · [architecture](https://openbimrs.github.io/mvd/architecture) · [security](https://openbimrs.github.io/mvd/security) · [standards boundary](https://openbimrs.github.io/mvd/standards-boundary) · [changelog](CHANGELOG.md)
 
-> **Early release:** `openbim-mvd` 0.1.0 is published on [crates.io](https://crates.io/crates/openbim-mvd). As a 0.x crate it makes no API compatibility guarantee between minor versions.
+> **Early release:** `openbim-mvd` 0.1.1 is published on [crates.io](https://crates.io/crates/openbim-mvd). As a 0.x crate it makes no API compatibility guarantee between minor versions.
 
 ## Capability matrix
 
